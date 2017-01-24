@@ -1,5 +1,5 @@
 <?php
-//config类
+/*配置类 */
 
 namespace Core;
 
@@ -100,38 +100,42 @@ class config{
         }
         return self::$configObject;
     }
-
+    
     //获取配置
-    public static function _getConfig($path = '', $info = [], $initialize = false){
-        //为空读取默认配置
-        if(empty($path)){
-            $path = CONFIG_DIR_NAME . '/' . DEFAULT_CONFIG;
+    public static function _getConfig($module = '', $path = '', $info = [], $initialize = false){
+        //默认值
+        if(empty($module)) $module = CONFIG_DIR_NAME;
+        if(empty($path)) $path = DEFAULT_CONFIG;
+        //单元配置
+        $unitList = self::_getUnitList();
+        if(in_array($module, $unitList)){
+            if(substr($path, 0, 7) !== 'Config/') $path = CONFIG_DIR_NAME . '/' . $path;
         }
-        $pathArr = explode('/', $path);
-        $unitList = (self::$frameInitialize['USE_UNIT_CONFIG'] == true) ? self::_getUnitList() : [];
-        if(count($pathArr) == 1){
-            if(in_array($pathArr[0], $unitList, true) || in_array($pathArr[0], [CONFIG_DIR_NAME], true)){
-                //传的是单元名
-                $path = $path . '/' . DEFAULT_CONFIG;
+        $configPath = $module . '/' . $path;
+        //已有数据直接返回
+        if(!isset(self::$projectConfig[$configPath]) || $initialize == true){
+            $configData = [];
+            //获取单元配置
+            if(in_array($module, $unitList)){
+                //获取公共配置
+                if(file_exists(ROOT_DIR . $path . CLASS_SUFFIX)){
+                    $configData = include_once ROOT_DIR . $path . CLASS_SUFFIX;
+                }
+                //获取单元配置
+                if(self::$frameInitialize['USE_UNIT_CONFIG'] == true){
+                    $unitConfig = include_once PROJECT_DIR . $configPath . CLASS_SUFFIX;
+                    if(!empty($unitConfig)){
+                        foreach($unitConfig as $key => $value){
+                            $configData[$key] = $value;
+                        }
+                    }
+                }
             }else{
-                //传的是文件名
-                $path = CONFIG_DIR_NAME . '/' . $path;
+                $configData = include_once ROOT_DIR . $configPath . CLASS_SUFFIX;
             }
+            self::$projectConfig[$configPath] = $configData;
         }
-        if(!isset(self::$projectConfig[$path]) || $initialize == true){
-            if(substr($path, 0, 7) === 'Config/'){
-                $filePath = ROOT_DIR . $path . CLASS_SUFFIX;
-            }else{
-                if(self::$frameInitialize['USE_UNIT_CONFIG'] != true) return [];
-                $pathArr = explode('/', $path);
-                $unitName = array_shift($pathArr);
-                $configPath = implode('/', $pathArr);
-                $filePath = PROJECT_DIR . $unitName . '/' . CONFIG_DIR_NAME . '/' . $configPath . CLASS_SUFFIX;
-            }
-            if(!file_exists($filePath)) return [];
-            self::$projectConfig[$path] = include_once $filePath;
-        }
-        return self::_getFilteredConfig(self::$projectConfig[$path], $info);
+        return self::_getFilteredConfig(self::$projectConfig[$configPath], $info);
     }
 
     public function _setConfig(){
