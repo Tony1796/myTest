@@ -142,6 +142,7 @@ class config{
 
     }
 
+    //获取指定的配置
     private static function _getFilteredConfig($configList, $getList = []){
         //info为空，返回整条配置
         if(empty($getList)) return $configList;
