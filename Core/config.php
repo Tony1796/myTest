@@ -102,7 +102,7 @@ class config{
     }
     
     //获取配置
-    public static function _getConfig($module = '', $path = '', $info = [], $initialize = false){
+    public static function _getConfig($path = '', $module = '', $info = [], $initialize = false){
         //默认值
         if(empty($module)) $module = CONFIG_DIR_NAME;
         if(empty($path)) $path = DEFAULT_CONFIG;

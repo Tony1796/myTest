@@ -26,7 +26,7 @@ class core{
         //载入单元组
         if(empty(self::$unitMap)) self::$unitMap = config::_getUnitList();
         //载入类映射
-        if(empty(self::$classMap)) self::$classMap = config::_getConfig('Config/classMap');
+        if(empty(self::$classMap)) self::$classMap = config::_getConfig('classMap');
         //自动加载类
         self::_implementAction();
     }
@@ -116,10 +116,11 @@ class core{
 
     //单入口自动加载类
     private static function _implementAction(){
-        $model = _getParameter('model', DEFAULT_MODEL);
+        $model = _getParameter('model', DEFAULT_MODEL . '/' . DEFAULT_UNIT . '/' . DEFAULT_CLASS);
         $action = _getParameter('action', DEFAULT_ACTION);
         $model = str_replace('.', '/', $model);
-        self::_loadClass($model)->$action();
+        $object = self::_loadClass($model);
+        if(null !== $object) $object->$action();
         exit;
     }
 }
