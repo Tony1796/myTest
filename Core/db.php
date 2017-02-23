@@ -126,7 +126,7 @@ class db{
                 $value = trim($value);
                 if(empty($value)){
                     unset($table[$key]);
-                    break;
+                    continue;
                 }
                 $table[$key] = $this->prefix . $value;
                 $tableName = $table[$key];
